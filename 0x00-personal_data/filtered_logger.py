@@ -73,6 +73,26 @@ def get_logger() -> logging.Logger:
     logger.addHandler(handler)
     return logger
 
+def main() -> None:
+    """
+    Method that retrieves all role in users tables and displays
+    """
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
+
+    headers = [field[0] for field in cursor.description]
+    logger = get_logger()
+
+    for row i cursor:
+        info_answer = ''
+        for f, p in zip(row, headers):
+            info_answer += f'{p}={(f)};'
+        logger.info(info_answer)
+
+    cursor.close()
+    db.close()
+
 
 if __name__ == "__main__":
     main()
