@@ -60,3 +60,21 @@ class DB:
         except InvalidRequestError:
             raise InvalidRequestError
         return user
+
+    def update_user(self, user_id: int, **kwargs) -> None:
+        """
+        Update a user in the db based on user_id
+        """
+        try:
+            user = self.find_user_by(id=user_id)
+            for key, value in kwargs.items():
+                if hasattr(User, key):
+                    setattr(user, key, value)
+                else:
+                    raise ValueError(f"Invalid argument: {key}")
+                self._session.commit()
+        except NoResultFound as e:
+            raise e
+        except InvalidRequestError as e:
+            self._session.rollback()
+            raise e
