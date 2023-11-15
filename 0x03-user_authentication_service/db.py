@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """DB module
 """
+from typing import Dict
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -37,19 +39,24 @@ class DB:
         Add a new user to the db
         """
         user = User(email=email, hashed_password=hashed_password)
-        self._session.add(user)
-        self._session.commit()
-        return user
-
-    def find_user_by(self, **kwargs):
-        """
-        find a user in the DB
-        """
         try:
-            user = self._session.query(User).filter_by(**kwargs).first()
-            if user is None:
-                raise NoResultFound("No user found with given name")
-            return user
-        except InvalidRequestError as e:
+            self._session.add(user)
+            self._session.commit()
+        except Exception as e:
+            print(f"Error adding user to database: {e}")
             self._session.rollback()
             raise e
+        return user
+
+    def find_user_by(self, **kwargs: Dict[str, str]) -> User:
+        """
+        find a user in the db
+        """
+        session = self._session
+        try:
+            user = session.query(User).filter_by(**kwargs).first()
+        except NoResultFound:
+            raise NoResultFound()
+        except InvalidRequestError:
+            raise InvalidRequestError
+        return user
