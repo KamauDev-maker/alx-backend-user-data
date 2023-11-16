@@ -9,8 +9,8 @@ AUTH = Auth()
 app = Flask(__name__)
 
 
-@app.route("/", method=["GET"], strict_slashes=False)
-def welcome() -> str:
+@app.route("/", methods=["GET"], strict_slashes=False)
+def index() -> str:
     """
     Get method returns a jsonify payload
     """
