@@ -5,6 +5,7 @@ Hashed password
 import bcrypt
 from db import DB
 from user import User
+from sqlalchemy.orm.exc import NoResultFound
 
 
 class Auth:
@@ -22,13 +23,28 @@ class Auth:
             existing_user = self._db.find_user_by(email=email)
             if existing_user:
                 raise ValueError(f"User {email} already exists")
-            hashed_password = self._db._hash_password(password)
+            hashed_password = _hash_password(password)
             new_user = self._db.add_user(
                     email=email, hashed_password=hashed_password
             )
             return new_user
         except ValueError as ve:
             raise ve
+
+    def valid_login(self, email: str, password: str) -> bool:
+        """
+        Validate login cedentials
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+            if user is not None:
+                password_bytes = password.encode('utf-8')
+                hashed_password = user.hashed_password
+                if bcrypt.checkpw(password_bytes, hashed_password):
+                    return True
+        except NoResultFound:
+            return False
+        return False
 
 
 def _hash_password(password: str) -> bytes:
