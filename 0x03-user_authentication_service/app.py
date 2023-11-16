@@ -2,8 +2,11 @@
 """
 Basic Flask app
 """
-from flask import Flask, jsonify
+import logging
+from flask import Flask, jsonify, abort, request
 from auth import Auth
+
+logging.disable(logging.WARNING)
 
 AUTH = Auth()
 app = Flask(__name__)
@@ -22,7 +25,7 @@ def register_user() -> str:
     Endpoint to register a user
     """
     try:
-        email = request.foam.get("email")
+        email = request.form.get("email")
         password = request.form.get("password")
 
         new_user = AUTH.register_user(email, password)
@@ -36,6 +39,19 @@ def register_user() -> str:
                 "message": "email already registered"
         }
         return jsonify(response), 400
+
+@app.route("/session", methods=["POST"], strict_slashes=False)
+def login() -> str:
+    """
+    post session on logging
+    """
+    email, password = request.form.get("email"), request.form.get("password")
+    if not Auth.valid_login(email, password):
+        abort(401)
+    session_id = Auth.create_session(email)
+    response = jsonify({"email": email, "message": "logged in"})
+    response.set_cookie("session_id", session_id)
+    return response
 
 
 if __name__ == "__main__":
