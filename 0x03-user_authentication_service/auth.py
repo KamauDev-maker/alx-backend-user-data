@@ -84,6 +84,21 @@ class Auth:
         except NoResultFound:
             pass
 
+    def update_password(self, reset_token: str, password: str) -> None:
+        """
+        Updates a user's password using a reset password
+        """
+        try:
+            user = self._db.find_user_by(reset_token=reset_token)
+        except NoResultFound:
+            raise ValueError("Invalid reset token")
+        new_hashed_password = _hash_password(password)
+        self._db.update_user(
+            user.id,
+            hashed_password=new_hashed_password,
+            reset_token=None,
+        )
+
 
 def _hash_password(password: str) -> bytes:
     """
