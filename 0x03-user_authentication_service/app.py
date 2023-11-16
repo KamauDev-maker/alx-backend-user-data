@@ -2,10 +2,10 @@
 """
 Basic Flask app
 """
-
 from flask import Flask, jsonify
+from auth import Auth
 
-
+AUTH = Auth()
 app = Flask(__name__)
 
 
@@ -15,6 +15,27 @@ def welcome() -> str:
     Get method returns a jsonify payload
     """
     return jsonify({"message": "Bienvenue"})
+
+@app.route("/users", methods=["POST"])
+def register_user() -> str:
+    """
+    Endpoint to register a user
+    """
+    try:
+        email = request.foam.get("email")
+        password = request.form.get("password")
+
+        new_user = AUTH.register_user(email, password)
+        response = {
+                "email": new_user.email,
+                "message": "user created"
+        }
+        return jsonify(response)
+    except ValueError as ve:
+        response = {
+                "message": "email already registered"
+        }
+        return jsonify(response), 400
 
 
 if __name__ == "__main__":
